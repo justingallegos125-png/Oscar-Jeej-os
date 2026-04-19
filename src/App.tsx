@@ -118,7 +118,7 @@ const APPS: AppConfig[] = [
   {
     id: "subwaysurfers",
     name: "Subway Surfers",
-    url: "subway-surfers.html",
+    url: "./subway-surfers.html",
     icon: <TrainFront className="w-8 h-8" />,
     color: "bg-orange-500",
     description: "Run as far as you can and dodge the oncoming trains."
@@ -126,7 +126,7 @@ const APPS: AppConfig[] = [
   {
     id: "fnf",
     name: "Friday Night Funkin'",
-    url: "friday-night-funkin.html",
+    url: "./friday-night-funkin.html",
     icon: <Mic className="w-8 h-8" />,
     color: "bg-pink-500",
     description: "Battle through rhythms in this legendary indie music game."
@@ -134,7 +134,7 @@ const APPS: AppConfig[] = [
   {
     id: "baldi",
     name: "Baldi's Basics",
-    url: "baldi.html",
+    url: "./baldi.html",
     icon: <Ruler className="w-8 h-8" />,
     color: "bg-red-600",
     description: "Educate yourself in this totally normal school game."
@@ -142,7 +142,7 @@ const APPS: AppConfig[] = [
   {
     id: "roulette",
     name: "Orange Roulette",
-    url: "orange-roulette.html",
+    url: "./orange-roulette.html",
     icon: <Ghost className="w-8 h-8" />,
     color: "bg-orange-700",
     description: "A high-stakes game of chance."
@@ -150,7 +150,7 @@ const APPS: AppConfig[] = [
   {
     id: "unknown",
     name: "Unknown",
-    url: "unknown.html",
+    url: "./unknown.html",
     icon: <FileQuestion className="w-8 h-8" />,
     color: "bg-zinc-800",
     description: "Drop an HTML file to launch it in a new window."
@@ -416,7 +416,21 @@ const ChromeBrowser = ({ onClose }: { onClose: () => void }) => {
   );
 };
 
-const AppWindow = ({ app, onClose, currentWallpaper = '', onSelect = () => {} }: { app: AppConfig, onClose: () => void, currentWallpaper?: string, onSelect?: (w: string) => void }) => {
+interface AppWindowProps {
+  app: AppConfig;
+  onClose: () => void;
+  currentWallpaper?: string;
+  onSelect?: (w: string) => void;
+  onOpenApp: (a: AppConfig) => void;
+}
+
+const AppWindow: React.FC<AppWindowProps> = ({ 
+  app, 
+  onClose, 
+  currentWallpaper = '', 
+  onSelect = () => {}, 
+  onOpenApp 
+}) => {
   if (app.id === 'chrome') {
     return <ChromeBrowser onClose={onClose} />;
   }
@@ -465,7 +479,15 @@ const AppWindow = ({ app, onClose, currentWallpaper = '', onSelect = () => {} }:
                    <p className="opacity-80">Customize your Oscar Jeej OS experience.</p>
                 </div>
                 <button 
-                  onClick={() => window.open('about:blank', '_blank')}
+                  onClick={() => onOpenApp({
+                    id: "about-blank-" + Date.now(),
+                    name: "About Blank",
+                    url: "about:blank",
+                    icon: <Globe size={16} />,
+                    color: "bg-slate-400",
+                    isBrowser: true,
+                    description: "A blank browser window."
+                  })}
                   className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded text-sm font-medium transition-colors flex items-center gap-2"
                 >
                   <ExternalLink size={16} />
@@ -506,10 +528,6 @@ const AppWindow = ({ app, onClose, currentWallpaper = '', onSelect = () => {} }:
       </div>
     </motion.div>
   );
-};
-
-const GameWindow = ({ app, onClose }: { app: AppConfig, onClose: () => void }) => {
-  return <AppWindow app={app} onClose={onClose} />;
 };
 
 const BootScreen = ({ onComplete, onLoginTrigger, onStageChange }: { onComplete: () => void, onLoginTrigger: () => void, onStageChange: (stage: number) => void }) => {
@@ -850,7 +868,22 @@ export default function App() {
   const [virusPopups, setVirusPopups] = useState<{ id: number; x: string; y: string }[]>([]);
   const [currentWallpaper, setCurrentWallpaper] = useState(LEAF_WALLPAPER);
   const [isPersonalizeOpen, setIsPersonalizeOpen] = useState(false);
+  const [openWindows, setOpenWindows] = useState<AppConfig[]>([]);
   const startupAudioRef = React.useRef<HTMLAudioElement | null>(null);
+
+  const openApp = (app: AppConfig) => {
+    if (!openWindows.find(w => w.id === app.id)) {
+      setOpenWindows([...openWindows, app]);
+    }
+    setActiveApp(app);
+  };
+
+  const closeWindow = (appId: string) => {
+    setOpenWindows(openWindows.filter(w => w.id !== appId));
+    if (activeApp?.id === appId) {
+      setActiveApp(null);
+    }
+  };
 
   const handleDownloadWallpaper = () => {
     if (currentWallpaper === 'video') return;
@@ -989,7 +1022,7 @@ export default function App() {
               key={app.id}
               name={app.name} 
               icon={app.icon} 
-              onClick={() => setActiveApp(app)}
+              onClick={() => openApp(app)}
             />
           ))}
           <DesktopIcon 
@@ -1018,20 +1051,22 @@ export default function App() {
                   triggerVirus();
                   setIsGamesFolderOpen(false);
                 } else {
-                  setActiveApp(app);
+                  openApp(app);
                   setIsGamesFolderOpen(false);
                 }
               }}
             />
           )}
-          {activeApp && (
+          {openWindows.map((app: AppConfig) => (
             <AppWindow 
-              app={activeApp} 
-              onClose={() => setActiveApp(null)} 
+              key={app.id}
+              app={app} 
+              onClose={() => closeWindow(app.id)} 
               currentWallpaper={currentWallpaper}
               onSelect={setCurrentWallpaper}
+              onOpenApp={openApp}
             />
-          )}
+          ))}
         </AnimatePresence>
 
         {/* Start Menu Overlay */}
