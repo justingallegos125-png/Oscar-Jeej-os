@@ -108,7 +108,7 @@ const APPS: AppConfig[] = [
   {
     id: "subwaysurfers",
     name: "Subway Surfers",
-    url: "/subway-surfers.html",
+    url: "subway-surfers.html",
     icon: <TrainFront className="w-8 h-8" />,
     color: "bg-orange-500",
     description: "Run as far as you can and dodge the oncoming trains."
@@ -116,7 +116,7 @@ const APPS: AppConfig[] = [
   {
     id: "fnf",
     name: "Friday Night Funkin'",
-    url: "/friday-night-funkin.html",
+    url: "friday-night-funkin.html",
     icon: <Mic className="w-8 h-8" />,
     color: "bg-pink-500",
     description: "Battle through rhythms in this legendary indie music game."
@@ -124,7 +124,7 @@ const APPS: AppConfig[] = [
   {
     id: "baldi",
     name: "Baldi's Basics",
-    url: "/baldi.html",
+    url: "baldi.html",
     icon: <Ruler className="w-8 h-8" />,
     color: "bg-red-600",
     description: "Educate yourself in this totally normal school game."
@@ -132,7 +132,7 @@ const APPS: AppConfig[] = [
   {
     id: "roulette",
     name: "Orange Roulette",
-    url: "/orange-roulette.html",
+    url: "orange-roulette.html",
     icon: <Ghost className="w-8 h-8" />,
     color: "bg-orange-700",
     description: "A high-stakes game of chance."
@@ -140,7 +140,7 @@ const APPS: AppConfig[] = [
   {
     id: "unknown",
     name: "Unknown",
-    url: "/unknown.html",
+    url: "unknown.html",
     icon: <FileQuestion className="w-8 h-8" />,
     color: "bg-zinc-800",
     description: "Drop an HTML file to launch it in a new window."
