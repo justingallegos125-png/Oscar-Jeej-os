@@ -178,7 +178,7 @@ const VirusPopup = ({ onClose }: { onClose: () => void }) => {
     <motion.div 
       initial={{ scale: 0.5, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
-      className="fixed inset-0 z-[999] flex items-center justify-center pointer-events-none"
+      className="pointer-events-none"
     >
       <div className="bg-red-600 p-8 rounded-none border-4 border-white shadow-[0_0_100px_rgba(255,0,0,0.8)] text-white text-center pointer-events-auto">
         <div className="flex justify-center mb-4">
@@ -301,7 +301,7 @@ const FolderWindow = ({ name, items, onClose, onItemClick }: { name: string, ite
 
       {/* Content Area */}
       <div className="flex-1 p-6 overflow-y-auto bg-white">
-        <div className="flex flex-wrap gap-6 items-start">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 items-start">
           {items.map(app => (
             <div 
               key={app.id}
@@ -743,7 +743,7 @@ export default function App() {
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number } | null>(null);
   const [bootStage, setBootStage] = useState(0);
   const [isInfected, setIsInfected] = useState(false);
-  const [virusPopups, setVirusPopups] = useState<number[]>([]);
+  const [virusPopups, setVirusPopups] = useState<{ id: number; x: string; y: string }[]>([]);
   const startupAudioRef = React.useRef<HTMLAudioElement | null>(null);
 
   const currentWallpaper = WALLPAPERS[wallpaperIndex];
@@ -785,14 +785,23 @@ export default function App() {
   const triggerVirus = () => {
     if (isInfected) return; // Don't trigger again if already active
     setIsInfected(true);
-    setVirusPopups([]); // Clear previous if any
+    setVirusPopups([]); // Clear previous
     
-    // Add multiple popups over time with unique IDs
+    // Add multiple popups over time with unique IDs and stable positions
     for (let i = 1; i <= 5; i++) {
         setTimeout(() => {
-          setVirusPopups(p => [...p, Date.now() + Math.random()]);
+          setVirusPopups(p => [...p, {
+            id: Date.now() + Math.random(),
+            x: `${Math.random() * 60 + 10}%`,
+            y: `${Math.random() * 60 + 10}%`
+          }]);
         }, i * 2000);
     }
+  };
+
+  const clearVirus = () => {
+    setIsInfected(false);
+    setVirusPopups([]);
   };
 
   useEffect(() => {
@@ -804,14 +813,14 @@ export default function App() {
   return (
     <div className={`min-h-screen bg-zinc-950 overflow-hidden font-sans relative ${isInfected ? 'infecting-shake infecting-glitch' : ''}`}>
       <AnimatePresence>
-        {isInfected && virusPopups.map((id) => (
-          <div key={id} style={{ 
+        {isInfected && virusPopups.map((popup) => (
+          <div key={popup.id} style={{ 
             position: 'fixed', 
-            top: `${Math.random() * 60 + 10}%`, 
-            left: `${Math.random() * 60 + 10}%`, 
+            top: popup.y, 
+            left: popup.x, 
             zIndex: 999 
           }}>
-            <VirusPopup onClose={() => setIsInfected(false)} />
+            <VirusPopup onClose={clearVirus} />
           </div>
         ))}
       </AnimatePresence>
@@ -872,36 +881,20 @@ export default function App() {
       )}
       {/* Desktop Area */}
       <main className="flex-1 relative p-6">
-        <div className="flex flex-col gap-8 h-full">
-          {/* Utilities Row */}
-          <div className="flex gap-4 items-start">
-            {APPS.filter(app => app.id === 'chrome' || app.id === 'unknown').map(app => (
-              <DesktopIcon 
-                key={app.id}
-                name={app.name} 
-                icon={app.icon} 
-                onClick={() => setActiveApp(app)}
-              />
-            ))}
-          </div>
-
-          {/* Games Square Grid (3x3) */}
-          <div className="grid grid-cols-3 gap-2 w-fit p-1 bg-white/5 rounded-none border border-white/10 backdrop-blur-sm self-start">
-            {APPS.filter(app => !app.isBrowser && app.id !== 'unknown').map(app => (
-              <DesktopIcon 
-                key={app.id}
-                name={app.name === 'Minecraft Classic' ? 'Minecraft' : app.name} 
-                icon={app.icon} 
-                onClick={() => {
-                  if (app.id === 'virus') {
-                    triggerVirus();
-                  } else {
-                    setActiveApp(app);
-                  }
-                }}
-              />
-            ))}
-          </div>
+        <div className="flex flex-col flex-wrap gap-4 h-full content-start items-start">
+          {APPS.filter(app => app.isBrowser || app.id === 'unknown').map(app => (
+            <DesktopIcon 
+              key={app.id}
+              name={app.name} 
+              icon={app.icon} 
+              onClick={() => setActiveApp(app)}
+            />
+          ))}
+          <DesktopIcon 
+            name="Games" 
+            icon={<Folder className="w-8 h-8" />} 
+            onClick={() => setIsGamesFolderOpen(true)}
+          />
         </div>
 
         {/* Windows Overlay */}
@@ -912,8 +905,13 @@ export default function App() {
               items={GAMES} 
               onClose={() => setIsGamesFolderOpen(false)} 
               onItemClick={(app) => {
-                setActiveApp(app);
-                setIsGamesFolderOpen(false);
+                if (app.id === 'virus') {
+                  triggerVirus();
+                  setIsGamesFolderOpen(false);
+                } else {
+                  setActiveApp(app);
+                  setIsGamesFolderOpen(false);
+                }
               }}
             />
           )}

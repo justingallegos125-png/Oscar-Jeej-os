@@ -1,6 +1,6 @@
 {
   "name": "Oscar Jeej OS",
   "description": "An advanced operating system simulation featuring unblocked games, high-stakes apps, and a playful Oscar Jeej theme.",
-  "requestFramePermissions": [],
+  "requestFramePermissions": ["camera", "microphone"],
   "majorCapabilities": []
 }
