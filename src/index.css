@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  /* Classic Windows 2000 Cursor URL */
+  --win-cursor: url('https://cur.cursors-4u.net/games/gam-4/gam372.cur'), auto;
+  --win-pointer: url('https://cur.cursors-4u.net/games/gam-4/gam373.cur'), pointer;
+}
+
+* {
+  cursor: var(--win-cursor) !important;
+}
+
+a, button, [role="button"], .cursor-pointer {
+  cursor: var(--win-pointer) !important;
+}
+
+@layer components {
+  .win10-logo-glow {
+    filter: drop-shadow(0 0 15px rgba(238, 79, 44, 0.4)) 
+            drop-shadow(0 0 15px rgba(128, 188, 0, 0.4)) 
+            drop-shadow(0 0 15px rgba(0, 164, 239, 0.4)) 
+            drop-shadow(0 0 15px rgba(255, 185, 0, 0.4));
+  }
+
+  .carbon-texture {
+    background-color: #1a1a1a;
+    background-image: 
+      radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0);
+    background-size: 4px 4px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 1px 1px rgba(255,255,255,0.1);
+  }
+
+  .win10-taskbar {
+    background: rgba(16, 16, 16, 0.85);
+    backdrop-filter: blur(20px) saturate(1.5);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .win10-start-menu {
+    background: rgba(31, 31, 31, 0.95);
+    backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  @keyframes screen-shake {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    25% { transform: translate(5px, 5px) rotate(1deg); }
+    50% { transform: translate(-5px, 2px) rotate(-1deg); }
+    75% { transform: translate(2px, -5px) rotate(0.5deg); }
+    100% { transform: translate(0, 0) rotate(0deg); }
+  }
+
+  @keyframes color-glitch {
+    0% { filter: hue-rotate(0deg) contrast(1); }
+    20% { filter: hue-rotate(90deg) contrast(1.5) invert(0.1); }
+    40% { filter: hue-rotate(180deg) contrast(1.2) invert(0.2); }
+    60% { filter: hue-rotate(270deg) contrast(0.8) invert(0.1); }
+    80% { filter: hue-rotate(360deg) contrast(2) invert(0.3); }
+    100% { filter: hue-rotate(0deg) contrast(1); }
+  }
+
+  @keyframes monitor-flicker {
+    0% { opacity: 1; }
+    5% { opacity: 0.95; }
+    10% { opacity: 1; }
+    15% { opacity: 0.8; }
+    20% { opacity: 1; }
+    25% { opacity: 0.9; }
+    100% { opacity: 1; }
+  }
+
+  .infecting-shake {
+    animation: screen-shake 0.1s infinite cubic-bezier(.36,.07,.19,.97) both;
+  }
+
+  .infecting-glitch {
+    animation: color-glitch 0.5s infinite linear;
+  }
+
+  .infecting-flicker {
+    animation: monitor-flicker 0.2s infinite linear;
+  }
+}
