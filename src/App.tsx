@@ -19,6 +19,7 @@ import {
   Trophy,
   Rocket,
   Image as ImageIcon,
+  Check,
   Download,
   Folder,
   Globe,
@@ -98,6 +99,15 @@ const APPS: AppConfig[] = [
     description: "The ultimate strategy game of kings and queens."
   },
   {
+    id: "settings",
+    name: "Settings",
+    url: "settings",
+    icon: <Settings className="w-8 h-8" />,
+    color: "bg-blue-600",
+    isBrowser: true,
+    description: "Personalize your OS and change backgrounds."
+  },
+  {
     id: "minecraft",
     name: "Minecraft Classic",
     url: "https://classic.minecraft.net/",
@@ -161,6 +171,7 @@ const LEAF_WALLPAPER = "https://images.unsplash.com/photo-1518531933037-91b2f5f2
 
 const WALLPAPERS = [
   LEAF_WALLPAPER,
+  "about:blank",
   "https://images.unsplash.com/photo-1620121692029-d088224ddc74?q=80&w=2064&auto=format&fit=crop", // Classic Win 10 Hero
   "https://i.postimg.cc/qM6hLhWq/644026850868779930.jpg", // Carbon Theme
   "https://images.unsplash.com/photo-1506197603052-3cc9c3a201bd?q=80&w=2070", // Beach
@@ -206,7 +217,8 @@ const VideoBackground = ({ opacity = 1, blur = 0, wallpaper }: { opacity?: numbe
       <div 
         className="absolute inset-0 bg-cover bg-center transition-all duration-1000"
         style={{ 
-          backgroundImage: `url("${wallpaper || LEAF_WALLPAPER}")`,
+          backgroundImage: wallpaper === 'about:blank' ? 'none' : `url("${wallpaper || LEAF_WALLPAPER}")`,
+          backgroundColor: wallpaper === 'about:blank' ? '#ffffff' : 'transparent',
           opacity: wallpaper === 'video' ? 0.3 : 1
         }}
       />
@@ -404,68 +416,84 @@ const ChromeBrowser = ({ onClose }: { onClose: () => void }) => {
   );
 };
 
-const AppWindow = ({ app, onClose }: { app: AppConfig, onClose: () => void }) => {
+const AppWindow = ({ app, onClose, currentWallpaper = '', onSelect = () => {} }: { app: AppConfig, onClose: () => void, currentWallpaper?: string, onSelect?: (w: string) => void }) => {
   if (app.id === 'chrome') {
     return <ChromeBrowser onClose={onClose} />;
   }
+
+  const isSettings = app.id === 'settings';
+
   return (
     <motion.div
       initial={{ scale: 0.95, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       exit={{ scale: 0.95, opacity: 0 }}
-      className="fixed inset-6 md:inset-12 z-[60] flex flex-col bg-[#1a1a1a]/95 backdrop-blur-xl border border-white/20 shadow-2xl overflow-hidden"
+      className={`fixed inset-6 md:inset-12 z-[60] flex flex-col ${isSettings ? 'bg-slate-50' : 'bg-[#1a1a1a]/95 backdrop-blur-xl'} border border-white/20 shadow-2xl overflow-hidden`}
     >
       {/* Title Bar */}
-      <div className="relative flex items-center justify-between px-4 py-1.5 border-b border-white/5 bg-white/5 select-none">
+      <div className={`relative flex items-center justify-between px-4 py-1.5 border-b ${isSettings ? 'border-slate-200 bg-slate-100' : 'border-white/5 bg-white/5'} select-none`}>
         <div className="flex items-center gap-3">
           <div className="p-0.5">
-             {React.cloneElement(app.icon as React.ReactElement, { size: 16, className: "text-white/80" })}
+             {React.cloneElement(app.icon as React.ReactElement, { size: 16, className: isSettings ? "text-blue-600" : "text-white/80" })}
           </div>
-          <h2 className="text-white/90 text-xs font-light tracking-wide">{app.name}</h2>
+          <h2 className={`${isSettings ? 'text-slate-700' : 'text-white/90'} text-xs font-light tracking-wide`}>{app.name}</h2>
         </div>
         
         <div className="flex items-center h-full">
-          <button className="w-10 h-8 flex items-center justify-center hover:bg-white/10 transition-colors text-white/60">
+          <button className={`w-10 h-8 flex items-center justify-center hover:bg-white/10 transition-colors ${isSettings ? 'text-slate-500' : 'text-white/60'}`}>
             <Minimize2 size={12} />
           </button>
-          <button className="w-10 h-8 flex items-center justify-center hover:bg-white/10 transition-colors text-white/60">
+          <button className={`w-10 h-8 flex items-center justify-center hover:bg-white/10 transition-colors ${isSettings ? 'text-slate-500' : 'text-white/60'}`}>
             <Maximize2 size={12} />
           </button>
           <button 
             onClick={onClose}
-            className="w-10 h-8 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors text-white/60"
+            className={`w-10 h-8 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors ${isSettings ? 'text-slate-500' : 'text-white/60'}`}
           >
             <X size={14} />
           </button>
         </div>
       </div>
 
-      {/* Frame content area */}
-      <div className="flex-1 bg-white relative flex flex-col m-[2px] rounded-sm overflow-hidden border border-slate-400 shadow-inner">
-        <div className="flex-1 bg-[#1a1a1a]">
-          <iframe 
-            src={app.url} 
-            className="w-full h-full border-none"
-            title={app.name}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          ></iframe>
-        </div>
-        <div className="px-3 py-1.5 bg-slate-100 border-t border-slate-300 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-slate-500 text-[9px] font-medium tracking-tight">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_5px_rgba(16,185,129,0.5)]" />
-             Running as Secure App in Oscar Jeej OS
+      {/* Content Area */}
+      <div className={`flex-1 relative flex flex-col ${isSettings ? '' : 'm-[2px] rounded-sm overflow-hidden border border-slate-400 shadow-inner'}`}>
+        {isSettings ? (
+          <div className="flex-1 bg-white flex flex-col">
+             <div className="bg-blue-600 p-8 text-white">
+                <h1 className="text-3xl font-bold">Settings</h1>
+                <p className="opacity-80">Customize your Oscar Jeej OS experience.</p>
+             </div>
+             <PersonalizationUI currentWallpaper={currentWallpaper} onSelect={onSelect} />
           </div>
-          <div className="flex items-center gap-2 text-slate-400 text-[9px]">
-            <ExternalLink size={8} /> Host: {(() => {
-              try {
-                return new URL(app.url, window.location.origin).hostname;
-              } catch (e) {
-                return "Internal";
-              }
-            })()}
+        ) : (
+          <div className="flex-1 bg-[#1a1a1a]">
+            <iframe 
+              src={app.url} 
+              className="w-full h-full border-none"
+              title={app.name}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
           </div>
-        </div>
+        )}
+        
+        {!isSettings && (
+          <div className="px-3 py-1.5 bg-slate-100 border-t border-slate-300 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-slate-500 text-[9px] font-medium tracking-tight">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_5px_rgba(16,185,129,0.5)]" />
+               Running as Secure App in Oscar Jeej OS
+            </div>
+            <div className="flex items-center gap-2 text-slate-400 text-[9px]">
+              <ExternalLink size={8} /> Host: {(() => {
+                try {
+                  return new URL(app.url || "", window.location.origin).hostname;
+                } catch (e) {
+                  return "Internal";
+                }
+              })()}
+            </div>
+          </div>
+        )}
       </div>
     </motion.div>
   );
@@ -686,6 +714,54 @@ interface ContextMenuProps {
   onChangeWallpaper: () => void;
 }
 
+const PersonalizationUI = ({ currentWallpaper, onSelect }: { currentWallpaper: string, onSelect: (w: string) => void }) => {
+  return (
+    <div className="flex-1 p-8 overflow-y-auto">
+      <h3 className="text-xl font-light mb-6 text-slate-800">Choose your background</h3>
+      
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div 
+          onClick={() => onSelect('video')}
+          className={`cursor-pointer group relative aspect-video rounded border-2 transition-all ${currentWallpaper === 'video' ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-transparent hover:border-slate-300'}`}
+        >
+          <div className="absolute inset-0 bg-black rounded overflow-hidden">
+             <div className="w-full h-full flex items-center justify-center text-white/50 text-[10px] uppercase font-bold tracking-tighter">
+                Video
+             </div>
+          </div>
+          <div className="absolute bottom-1 right-1 bg-blue-500 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Check size={10} className="text-white" />
+          </div>
+        </div>
+
+        {WALLPAPERS.map((wp, i) => (
+          <div 
+            key={i}
+            onClick={() => onSelect(wp)}
+            className={`cursor-pointer group relative aspect-video rounded border-2 transition-all ${currentWallpaper === wp ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-transparent hover:border-slate-300'}`}
+          >
+            {wp === 'about:blank' ? (
+              <div className="w-full h-full bg-white flex items-center justify-center text-[10px] text-slate-400 font-mono shadow-inner">
+                 about:blank
+              </div>
+            ) : (
+              <img 
+                src={wp} 
+                alt={`Wallpaper ${i}`} 
+                className="w-full h-full object-cover rounded"
+                referrerPolicy="no-referrer"
+              />
+            )}
+            <div className="absolute bottom-1 right-1 bg-blue-500 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Check size={10} className="text-white" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const PersonalizeWindow = ({ onClose, currentWallpaper, onSelect }: { onClose: () => void, currentWallpaper: string, onSelect: (w: string) => void }) => {
   return (
     <motion.div
@@ -704,43 +780,7 @@ const PersonalizeWindow = ({ onClose, currentWallpaper, onSelect }: { onClose: (
         </button>
       </div>
       
-      <div className="flex-1 p-8 overflow-y-auto">
-        <h3 className="text-xl font-light mb-6 text-slate-800">Choose your background</h3>
-        
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          <div 
-            onClick={() => onSelect('video')}
-            className={`cursor-pointer group relative aspect-video rounded border-2 transition-all ${currentWallpaper === 'video' ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-transparent hover:border-slate-300'}`}
-          >
-            <div className="absolute inset-0 bg-black rounded overflow-hidden">
-               <div className="w-full h-full flex items-center justify-center text-white/50 text-[10px] uppercase font-bold tracking-tighter">
-                  Video
-               </div>
-            </div>
-            <div className="absolute bottom-1 right-1 bg-blue-500 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Check size={10} className="text-white" />
-            </div>
-          </div>
-
-          {WALLPAPERS.map((wp, i) => (
-            <div 
-              key={i}
-              onClick={() => onSelect(wp)}
-              className={`cursor-pointer group relative aspect-video rounded border-2 transition-all ${currentWallpaper === wp ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-transparent hover:border-slate-300'}`}
-            >
-              <img 
-                src={wp} 
-                alt={`Wallpaper ${i}`} 
-                className="w-full h-full object-cover rounded"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute bottom-1 right-1 bg-blue-500 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Check size={10} className="text-white" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <PersonalizationUI currentWallpaper={currentWallpaper} onSelect={onSelect} />
     </motion.div>
   );
 };
@@ -976,7 +1016,12 @@ export default function App() {
             />
           )}
           {activeApp && (
-            <AppWindow app={activeApp} onClose={() => setActiveApp(null)} />
+            <AppWindow 
+              app={activeApp} 
+              onClose={() => setActiveApp(null)} 
+              currentWallpaper={currentWallpaper}
+              onSelect={setCurrentWallpaper}
+            />
           )}
         </AnimatePresence>
 
