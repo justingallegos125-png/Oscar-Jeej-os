@@ -157,11 +157,10 @@ const APPS: AppConfig[] = [
 
 const GAMES = APPS.filter(a => !a.isBrowser);
 
-const BACKGROUND_IMAGE = `https://picsum.photos/seed/${Math.random()}/1920/1080?nature,landscape,desktop`;
-const LOGIN_BACKGROUND = `https://picsum.photos/seed/${Math.random()}/1920/1080?nature,landscape,login`;
+const LEAF_WALLPAPER = "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=2070&auto=format&fit=crop";
 
 const WALLPAPERS = [
-  BACKGROUND_IMAGE,
+  LEAF_WALLPAPER,
   "https://images.unsplash.com/photo-1620121692029-d088224ddc74?q=80&w=2064&auto=format&fit=crop", // Classic Win 10 Hero
   "https://i.postimg.cc/qM6hLhWq/644026850868779930.jpg", // Carbon Theme
   "https://images.unsplash.com/photo-1506197603052-3cc9c3a201bd?q=80&w=2070", // Beach
@@ -197,31 +196,36 @@ const VirusPopup = ({ onClose }: { onClose: () => void }) => {
   );
 };
 
-const VideoBackground = ({ opacity = 1, blur = 0 }: { opacity?: number, blur?: number }) => {
+const VideoBackground = ({ opacity = 1, blur = 0, wallpaper }: { opacity?: number, blur?: number, wallpaper?: string }) => {
   return (
     <div 
       className="absolute inset-0 z-0 overflow-hidden pointer-events-none bg-emerald-950"
       style={{ filter: blur > 0 ? `blur(${blur}px)` : 'none' }}
     >
-      {/* High-Resolution Static Fallback */}
+      {/* Background Image */}
       <div 
-        className="absolute inset-0 bg-cover bg-center brightness-50"
-        style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=2070&auto=format&fit=crop")' }}
+        className="absolute inset-0 bg-cover bg-center transition-all duration-1000"
+        style={{ 
+          backgroundImage: `url("${wallpaper || LEAF_WALLPAPER}")`,
+          opacity: wallpaper === 'video' ? 0.3 : 1
+        }}
       />
       
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
-        className="w-full h-full object-cover relative z-10"
-        style={{ opacity }}
-      >
-        <source src="https://player.vimeo.com/external/494954471.sd.mp4?s=d7065983756da59f77f98c8bc1fa0174e7fc7e42&profile_id=165" type="video/mp4" />
-        <source src="https://player.vimeo.com/external/370331493.sd.mp4?s=34f9a3978502579df643198889953f938c82a5c3&profile_id=139" type="video/mp4" />
-      </video>
-      <div className="absolute inset-0 bg-black/40 z-20" />
+      {wallpaper === 'video' && (
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          className="w-full h-full object-cover relative z-10"
+          style={{ opacity }}
+        >
+          <source src="https://player.vimeo.com/external/494954471.sd.mp4?s=d7065983756da59f77f98c8bc1fa0174e7fc7e42&profile_id=165" type="video/mp4" />
+          <source src="https://player.vimeo.com/external/370331493.sd.mp4?s=34f9a3978502579df643198889953f938c82a5c3&profile_id=139" type="video/mp4" />
+        </video>
+      )}
+      <div className="absolute inset-0 bg-black/20 z-20" />
     </div>
   );
 };
@@ -682,7 +686,66 @@ interface ContextMenuProps {
   onChangeWallpaper: () => void;
 }
 
-const DesktopContextMenu = ({ x, y, onClose, onDownload, onChangeWallpaper }: ContextMenuProps) => {
+const PersonalizeWindow = ({ onClose, currentWallpaper, onSelect }: { onClose: () => void, currentWallpaper: string, onSelect: (w: string) => void }) => {
+  return (
+    <motion.div
+      initial={{ scale: 0.95, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.95, opacity: 0 }}
+      className="fixed inset-20 md:inset-32 z-[80] flex flex-col bg-white/95 backdrop-blur-xl border border-slate-300 shadow-2xl rounded-sm overflow-hidden"
+    >
+      <div className="flex items-center justify-between px-4 py-2 border-b border-slate-200 bg-slate-100">
+        <div className="flex items-center gap-2">
+          <ImageIcon size={16} className="text-blue-600" />
+          <h2 className="text-slate-700 text-xs font-medium">Personalization</h2>
+        </div>
+        <button onClick={onClose} className="hover:bg-red-500 hover:text-white p-1 transition-colors">
+          <X size={14} />
+        </button>
+      </div>
+      
+      <div className="flex-1 p-8 overflow-y-auto">
+        <h3 className="text-xl font-light mb-6 text-slate-800">Choose your background</h3>
+        
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          <div 
+            onClick={() => onSelect('video')}
+            className={`cursor-pointer group relative aspect-video rounded border-2 transition-all ${currentWallpaper === 'video' ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-transparent hover:border-slate-300'}`}
+          >
+            <div className="absolute inset-0 bg-black rounded overflow-hidden">
+               <div className="w-full h-full flex items-center justify-center text-white/50 text-[10px] uppercase font-bold tracking-tighter">
+                  Video
+               </div>
+            </div>
+            <div className="absolute bottom-1 right-1 bg-blue-500 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Check size={10} className="text-white" />
+            </div>
+          </div>
+
+          {WALLPAPERS.map((wp, i) => (
+            <div 
+              key={i}
+              onClick={() => onSelect(wp)}
+              className={`cursor-pointer group relative aspect-video rounded border-2 transition-all ${currentWallpaper === wp ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-transparent hover:border-slate-300'}`}
+            >
+              <img 
+                src={wp} 
+                alt={`Wallpaper ${i}`} 
+                className="w-full h-full object-cover rounded"
+                referrerPolicy="no-referrer"
+              />
+              <div className="absolute bottom-1 right-1 bg-blue-500 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Check size={10} className="text-white" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+const DesktopContextMenu = ({ x, y, onClose, onDownload, onPersonalize }: any) => {
   useEffect(() => {
     const handleClick = () => onClose();
     const handleContextMenu = () => onClose();
@@ -704,12 +767,12 @@ const DesktopContextMenu = ({ x, y, onClose, onDownload, onChangeWallpaper }: Co
       onClick={(e) => e.stopPropagation()}
     >
       <div 
-        onClick={(e) => { e.stopPropagation(); onChangeWallpaper(); onClose(); }}
+        onClick={(e) => { e.stopPropagation(); onPersonalize(); onClose(); }}
         className="px-4 py-1.5 hover:bg-blue-500 hover:text-white cursor-pointer flex items-center justify-between transition-colors"
       >
         <div className="flex items-center gap-3">
-          <ImageIcon size={16} />
-          <span>Next Wallpaper</span>
+          <Settings size={16} />
+          <span>Personalize</span>
         </div>
       </div>
       <div 
@@ -718,14 +781,7 @@ const DesktopContextMenu = ({ x, y, onClose, onDownload, onChangeWallpaper }: Co
       >
         <div className="flex items-center gap-3">
           <Download size={16} />
-          <span>Download Image</span>
-        </div>
-      </div>
-      <div className="h-px bg-slate-200 my-1 mx-1" />
-      <div className="px-4 py-1.5 hover:bg-blue-500 hover:text-white cursor-pointer flex items-center justify-between transition-colors">
-        <div className="flex items-center gap-3">
-          <Settings size={16} />
-          <span>Personalize</span>
+          <span>Download Wallpaper</span>
         </div>
       </div>
     </motion.div>
@@ -739,23 +795,19 @@ export default function App() {
   const [activeApp, setActiveApp] = useState<AppConfig | null>(null);
   const [isGamesFolderOpen, setIsGamesFolderOpen] = useState(false);
   const [time, setTime] = useState(new Date());
-  const [wallpaperIndex, setWallpaperIndex] = useState(0);
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number } | null>(null);
   const [bootStage, setBootStage] = useState(0);
   const [isInfected, setIsInfected] = useState(false);
   const [virusPopups, setVirusPopups] = useState<{ id: number; x: string; y: string }[]>([]);
+  const [currentWallpaper, setCurrentWallpaper] = useState(LEAF_WALLPAPER);
+  const [isPersonalizeOpen, setIsPersonalizeOpen] = useState(false);
   const startupAudioRef = React.useRef<HTMLAudioElement | null>(null);
 
-  const currentWallpaper = WALLPAPERS[wallpaperIndex];
-
-  const handleNextWallpaper = () => {
-    setWallpaperIndex((prev) => (prev + 1) % WALLPAPERS.length);
-  };
-
   const handleDownloadWallpaper = () => {
+    if (currentWallpaper === 'video') return;
     const link = document.createElement("a");
     link.href = currentWallpaper;
-    link.download = `wallpaper-${wallpaperIndex}.jpg`;
+    link.download = `wallpaper.jpg`;
     link.target = "_blank";
     document.body.appendChild(link);
     link.click();
@@ -844,6 +896,7 @@ export default function App() {
       <VideoBackground 
         blur={booting ? (bootStage === 1 ? 12 : 0) : 0} 
         opacity={booting ? (bootStage === 1 ? 0.6 : 0.8) : 0.9} 
+        wallpaper={currentWallpaper}
       />
 
       <div className="relative z-10 w-full h-full min-h-screen">
@@ -875,7 +928,7 @@ export default function App() {
           x={contextMenu.x} 
           y={contextMenu.y} 
           onClose={() => setContextMenu(null)}
-          onChangeWallpaper={handleNextWallpaper}
+          onPersonalize={() => setIsPersonalizeOpen(true)}
           onDownload={handleDownloadWallpaper}
         />
       )}
@@ -899,6 +952,13 @@ export default function App() {
 
         {/* Windows Overlay */}
         <AnimatePresence>
+          {isPersonalizeOpen && (
+            <PersonalizeWindow 
+              currentWallpaper={currentWallpaper}
+              onSelect={setCurrentWallpaper}
+              onClose={() => setIsPersonalizeOpen(false)}
+            />
+          )}
           {isGamesFolderOpen && (
             <FolderWindow 
               name="Games" 
