@@ -458,10 +458,19 @@ const AppWindow = ({ app, onClose, currentWallpaper = '', onSelect = () => {} }:
       {/* Content Area */}
       <div className={`flex-1 relative flex flex-col ${isSettings ? '' : 'm-[2px] rounded-sm overflow-hidden border border-slate-400 shadow-inner'}`}>
         {isSettings ? (
-          <div className="flex-1 bg-white flex flex-col">
-             <div className="bg-blue-600 p-8 text-white">
-                <h1 className="text-3xl font-bold">Settings</h1>
-                <p className="opacity-80">Customize your Oscar Jeej OS experience.</p>
+          <div className="flex-1 bg-white flex flex-col min-h-0">
+             <div className="bg-blue-600 p-8 text-white flex items-center justify-between">
+                <div>
+                   <h1 className="text-3xl font-bold">Settings</h1>
+                   <p className="opacity-80">Customize your Oscar Jeej OS experience.</p>
+                </div>
+                <button 
+                  onClick={() => window.open('about:blank', '_blank')}
+                  className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded text-sm font-medium transition-colors flex items-center gap-2"
+                >
+                  <ExternalLink size={16} />
+                  Open about:blank
+                </button>
              </div>
              <PersonalizationUI currentWallpaper={currentWallpaper} onSelect={onSelect} />
           </div>
@@ -716,7 +725,7 @@ interface ContextMenuProps {
 
 const PersonalizationUI = ({ currentWallpaper, onSelect }: { currentWallpaper: string, onSelect: (w: string) => void }) => {
   return (
-    <div className="flex-1 p-8 overflow-y-auto">
+    <div className="flex-1 p-8 overflow-y-auto min-h-0">
       <h3 className="text-xl font-light mb-6 text-slate-800">Choose your background</h3>
       
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
